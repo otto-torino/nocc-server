@@ -42,7 +42,6 @@ class LoginView(views.APIView):
                 login(request, user)
 
                 serialized = UserSerializer(user)
-                #serialized = DoctorSerializer(user.doctor) if user.doctor else PatientSerializer(user.patient)
 
                 return Response(serialized.data)
             else:

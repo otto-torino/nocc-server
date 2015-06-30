@@ -1,6 +1,10 @@
+# coding=utf-8
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+
+from rest_framework.test import APIClient
+from rest_framework.authtoken.models import Token
 
 from noccapp.managers import DoctorManager
 from noccapp.models.actors import Doctor, Patient
@@ -8,7 +12,9 @@ from noccapp.models.actors import Doctor, Patient
 import datetime
 
 class DoctorManagerTest(TestCase):
-
+    """
+    Test the Doctor Manager class
+    """
     def setUp(self):
         self.u1 = User.objects.create(username='gino')
         self.u2 = User.objects.create(username='pino')
@@ -30,7 +36,9 @@ class DoctorManagerTest(TestCase):
         self.assertEqual(Doctor.objects.radiotherapists().count(), 1)
 
 class PatientModelTest(TestCase):
-
+    """
+    Test the Patient Model Class
+    """
     def setUp(self):
         self.u1 = User.objects.create(username='gino')
         doctor_surgeon = Doctor.objects.create(user=self.u1, firstname='Gino', lastname='Pino', is_surgeon=True)
@@ -40,4 +48,31 @@ class PatientModelTest(TestCase):
         patient = Patient.objects.create(user=self.u1, sex=Patient.MALE_SEX, birth_date=datetime.date(2000, 01, 01), birth_place='Capri', firstname='Lino', lastname='Banfi')
         with self.assertRaises(ValidationError):
             patient.clean()
+
+class PatientViewsetTest(TestCase):
+
+    def setUp(self):
+        self.u1 = User.objects.create(username='surgeon')
+        doctor_surgeon = Doctor.objects.create(user=self.u1, firstname='Gino', lastname='Pino', is_surgeon=True)
+
+    def test_patient_create(self):
+        """
+        """
+        client = APIClient()
+        token = Token.objects.get(user__username='surgeon')
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        new_patient = {
+            'firstname': 'Luca',
+            'lastname': 'Ginelli',
+            'sex': 1,
+            'cf': 'BGGSGT88G23G674G',
+            'birth_date': '1988-05-12',
+            'birth_place': 'Milano',
+            'address': 'Via Roma 43',
+            'city': 'Torino',
+            'phone': '8988',
+            'email': 'luca@yahoo.com'
+        }
+        response = client.post('/nocc/api/v1/patient/', new_patient, format='json')
+        self.assertEqual(response.status_code, 201)
 

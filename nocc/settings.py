@@ -27,6 +27,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# email
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 25
 
 # Application definition
 
@@ -38,6 +41,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
     'noccapp',
 )
@@ -131,10 +135,23 @@ STATICFILES_DIRS = (
 
 # Media
 MEDIA_ROOT = BASE_DIR + '/media'
-MEDIA_DOCTOR = MEDIA_ROOT + '/doctors'
+MEDIA_URL = '/media/'
+MEDIA_DOCTOR = 'doctors'
 MEDIA_DOCTOR_CV = MEDIA_DOCTOR + '/cv'
+MEDIA_DOCTOR_PHOTO = MEDIA_DOCTOR + '/photo'
+
+#APP
+APP_ROOT = '/home/abidibo/Web/www/nocc/frontend/nocc/build'
+
+# DRF
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
 
 #CORS HEADERS
 CORS_ORIGIN_WHITELIST = (
     'localhost'
 )
+CORS_ALLOW_CREDENTIALS = True

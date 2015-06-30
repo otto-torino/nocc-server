@@ -1,6 +1,10 @@
 from django.contrib import admin
 from noccapp.models.actors import Doctor, Hospital, DoctorContact, Patient
+from noccapp.models.cases import Case
 
+"""
+Actors
+"""
 class HospitalAdmin(admin.ModelAdmin):
   list_display = ('name', )
 
@@ -21,4 +25,16 @@ class DoctorContactAdmin(admin.ModelAdmin):
 
 admin.site.register(DoctorContact, DoctorContactAdmin)
 
-admin.site.register(Patient)
+class PatientAdmin(admin.ModelAdmin):
+  list_display = ('user', 'firstname', 'lastname', 'email', )
+
+admin.site.register(Patient, PatientAdmin)
+
+"""
+Cases
+"""
+class CaseAdmin(admin.ModelAdmin):
+  list_display = ('patient', 'description', 'insertion_date', 'last_edit_date', )
+
+admin.site.register(Case, CaseAdmin)
+

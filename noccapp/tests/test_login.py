@@ -38,6 +38,7 @@ class LoginTest(TestCase):
         response = client.post('/nocc/api/v1/auth/login/', {'username': 'gino', 'password': 'pino'}, format='json')
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
-        self.assertEqual(data.get('doctor').get('firstname'), 'Gino')
+        self.assertEqual(data.get('user').get('is_doctor'), True)
+        self.assertEqual(data.get('user').get('username'), 'gino')
 
 
