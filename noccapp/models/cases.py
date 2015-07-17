@@ -1,7 +1,12 @@
 # coding=utf-8
-from django.db import models
+import os
 
-from noccapp.models.actors import Patient, Doctor
+from django.db import models
+from django.conf import settings
+
+from private_media.storages import PrivateMediaStorage
+
+from noccapp.models.actors import Patient, Doctor, DoctorContact
 
 class Case(models.Model):
     """
@@ -92,11 +97,79 @@ class Case(models.Model):
     relapse = models.ForeignKey('self', verbose_name = 'recidiva', blank=True, null=True)
     status = models.IntegerField('stato', choices=STATUS_CHOICES)
     patient = models.ForeignKey(Patient, verbose_name = 'paziente')
-    surgeon = models.ForeignKey(Doctor, verbose_name = 'chirurgo', limit_choices_to={'is_surgeon': True})
-    oncologist = models.ForeignKey(Doctor, verbose_name = 'oncologo', limit_choices_to={'is_oncologist': True}, related_name='oncologist_cases', blank=True, null=True)
+    surgeon_contact = models.ForeignKey(DoctorContact, verbose_name = 'chirurgo', limit_choices_to={'doctor__is_surgeon': True})
+    oncologist_contact = models.ForeignKey(DoctorContact, verbose_name = 'oncologo', limit_choices_to={'doctor__is_oncologist': True}, related_name='oncologist_cases', blank=True, null=True)
     oncologist_status = models.IntegerField('status oncologo', choices=ONCOLOGIST_STATUS, blank=True, null=True)
-    radiotherapist = models.ForeignKey(Doctor, verbose_name = 'radioterapista', limit_choices_to={'is_radiotherapist': True}, related_name='radiotherapist_cases', blank=True, null=True)
+    radiotherapist_contact = models.ForeignKey(DoctorContact, verbose_name = 'radioterapista', limit_choices_to={'doctor__is_radiotherapist': True}, related_name='radiotherapist_cases', blank=True, null=True)
     radiotherapist_status = models.IntegerField('status radioterapista', choices=RADIOTHERAPIST_STATUS, blank=True, null=True)
     observers = models.ManyToManyField(Doctor, verbose_name='osservatori', related_name="observer_cases", blank=True, null=True)
     insertion_date = models.DateTimeField(verbose_name='inserimento', auto_now=False, auto_now_add=True)
     last_edit_date = models.DateTimeField(verbose_name='ultima modifica', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'caso clinico'
+        verbose_name_plural = 'casi clinici'
+
+    def __unicode__(self):
+        return self.description
+
+
+class Examination(models.Model):
+    """
+    Clinical examinations
+    """
+    ENDOSCOPY = 1
+    TC = 2
+    PET_TC = 3
+    HISTOLOGICAL = 4
+    COMORBID = 5
+    HISTORY = 6
+
+
+    TYPE_CHOICES = (
+        (ENDOSCOPY, 'endoscopia'),
+        (TC, 'TC'),
+        (PET_TC, 'PET-TC'),
+        (HISTOLOGICAL, 'esame istologico'),
+        (COMORBID, 'comorbilità'),
+        (HISTORY, 'anamnesi, note'),
+    )
+
+    case = models.ForeignKey(Case, verbose_name="caso clinico")
+    description = models.CharField('descrizione', max_length=255)
+    type = models.IntegerField('tipologia', choices=TYPE_CHOICES)
+    date = models.DateField('data')
+    text = models.TextField('referto')
+    follow_up = models.BooleanField('follow up', default=False)
+    revaluation = models.BooleanField('rivalutazione', default=False)
+
+    class Meta:
+        verbose_name = 'esame clinico'
+        verbose_name_plural = 'esami clinici'
+
+    def __unicode__(self):
+        return '%s- %s' % (str(self.date), self.description)
+
+def set_examination_attachment_folder(instance, filename):
+    """
+    Path to the upload folder for doctors' cv
+    """
+    #return '/'.join([settings.MEDIA_CASES, str(instance.examination.case.id), 'examinations', filename])
+    return '/'.join([settings.PRIVATE_MEDIA_CASES, str(instance.examination.case.id), 'examinations', filename])
+
+class ExaminationAttachment(models.Model):
+    """
+    Medical examination attachments
+    """
+    examination = models.ForeignKey(Examination, related_name='attachments')
+    insertion_date = models.DateTimeField('inserimento', auto_now_add=True)
+    file = models.FileField('file', upload_to=set_examination_attachment_folder, storage=PrivateMediaStorage(), blank=False, null=False)
+
+    class Meta:
+        verbose_name = 'allegato'
+        verbose_name_plural = 'allegati'
+
+    def __unicode__(self):
+        return str(self.file)
+
+

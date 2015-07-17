@@ -6,14 +6,16 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
 from noccapp.models.actors import Doctor, DoctorContact, DoctorContactAvailabilityException, Hospital, Patient
-from noccapp.permissions import IsDoctorProfileOwner, IsContactOwner, IsExceptionOwner, IsSurgeon
+from noccapp.permissions import IsDoctorProfileOwner, IsDoctor, IsContactOwner, IsExceptionContactOwner, IsExceptionOwner, IsSurgeon
 from noccapp.serializers import DoctorSerializer, UserSerializer, DoctorContactSerializer, HospitalSerializer, DoctorContactAvailabilityExceptionSerializer, PatientSerializer
 
 class DoctorcRUdView(mixins.RetrieveModelMixin,
                      mixins.UpdateModelMixin,
+                     mixins.ListModelMixin,
                      viewsets.GenericViewSet):
     """
     Doctors' profiles get and update
+    Doctors can be retrieved by type (oncologist, radiotherapist, surgeon)
     """
     lookup_field = 'user__username'
     queryset = Doctor.objects.all()
@@ -21,23 +23,13 @@ class DoctorcRUdView(mixins.RetrieveModelMixin,
 
     def get_permissions(self):
         """
-        Only authenticated users may access and update their own profiles
+        Authenticated users may read
+        Only profile owners may update their profiles
         """
-        return (permissions.IsAuthenticated(), IsDoctorProfileOwner(),)
-
-class DoctorListView(mixins.ListModelMixin,
-                     viewsets.GenericViewSet):
-    """
-    Doctors' list
-    """
-    queryset = Doctor.objects.all()
-    serializer_class = DoctorSerializer
-
-    def get_permissions(self):
-        """
-        Only authenticated users may get such list
-        """
-        return (permissions.IsAuthenticated(), )
+        if self.request.method in permissions.SAFE_METHODS:
+            return (permissions.IsAuthenticated(),)
+        else:
+            return (permissions.IsAuthenticated(), IsDoctorProfileOwner(),)
 
     def get_queryset(self):
         """
@@ -57,7 +49,8 @@ class DoctorListView(mixins.ListModelMixin,
 
 class DoctorContactViewSet(viewsets.ModelViewSet):
     """
-    Doctors' CRUD
+    Doctors' Contact CRUD
+    The doctor username is provided by url (user__username)
     """
     lookup_field = 'id'
     queryset = DoctorContact.objects.all()
@@ -65,40 +58,33 @@ class DoctorContactViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         """
-        Only authenticated users may access and update their own contacts
+        Authenticated users may retrieve contacts
+        Only doctors may create and update their own contacts
         """
         if self.request.method in permissions.SAFE_METHODS:
             return (permissions.IsAuthenticated(),)
 
         if self.request.method == 'POST':
-            return (permissions.IsAuthenticated(),)
+            # doctor can only add his contacts because doctor field is filled automatically, see perform_create
+            return (permissions.IsAuthenticated(), IsDoctor(),)
 
         return (permissions.IsAuthenticated(), IsContactOwner(),)
 
     def get_queryset(self):
+        return DoctorContact.objects.filter(doctor__user__username=self.kwargs['user__username'])
+
+    def perform_create(self, serializer):
         """
-        Looks for doctor param in order to filter only contacts related to that user
+        Authenticated doctor is automatically set as the value of the doctor field
         """
-        queryset = DoctorContact.objects.all()
-        doctor_id = self.request.query_params.get('doctor', None)
-        if doctor_id is not None:
-            queryset = queryset.filter(doctor__id=doctor_id)
-        return queryset
+        instance = serializer.save(doctor=self.request.user.doctor)
+
+        return super(DoctorContactViewSet, self).perform_create(serializer)
 
     def delete(self, request, pk, format=None):
         contact = self.get_object(pk)
         contact.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-    """
-    def get_serializer_class(self):
-
-        if self.request.METHOD == 'GET':
-            return self.get_serializer_class
-        else:
-            return super(DoctorContactViewSet, self).get_serializer_class()
-    """
 
 class DoctorContactAvailabilityExceptionCRuDView(mixins.CreateModelMixin,
                                                  mixins.ListModelMixin,
@@ -106,6 +92,7 @@ class DoctorContactAvailabilityExceptionCRuDView(mixins.CreateModelMixin,
                                                  viewsets.GenericViewSet):
     """
     Doctors' availability exceptions CRuD
+    contact_id parameter is provided through url
     """
     lookup_field = 'id'
     queryset = DoctorContactAvailabilityException.objects.all()
@@ -113,20 +100,20 @@ class DoctorContactAvailabilityExceptionCRuDView(mixins.CreateModelMixin,
 
     def get_permissions(self):
         """
-        Only authenticated users may access and update their own profiles
+        Only authenticated users may read exceptions
+        Only contact owner may create exceptions
+        Only exception owner can update / delete exception
+        When posting an exception the doctor_contact field must be provided,
+        then the IsContactOwner permission checks that such contact belongs to
+        the authenticated user
         """
+        if self.request.method in permissions.SAFE_METHODS:
+            return (permissions.IsAuthenticated(),)
+
+        if self.request.method == 'POST':
+            return (permissions.IsAuthenticated(), IsExceptionContactOwner(),)
+
         return (permissions.IsAuthenticated(), IsExceptionOwner(),)
-
-    def get_queryset(self):
-        """
-        Looks for contact param in order to filter only exception related to such contact
-        """
-        queryset = DoctorContactAvailabilityException.objects.all()
-        contact_id = self.request.query_params.get('contact', None)
-        if contact_id is not None:
-            queryset = queryset.filter(doctor_contact__id=contact_id)
-        return queryset
-
 
 class HospitalViewSet(viewsets.ModelViewSet):
     """

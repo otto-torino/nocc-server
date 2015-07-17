@@ -1,6 +1,6 @@
 from django.contrib import admin
 from noccapp.models.actors import Doctor, Hospital, DoctorContact, Patient
-from noccapp.models.cases import Case
+from noccapp.models.cases import Case, Examination, ExaminationAttachment
 
 """
 Actors
@@ -38,3 +38,12 @@ class CaseAdmin(admin.ModelAdmin):
 
 admin.site.register(Case, CaseAdmin)
 
+class ExaminationAdmin(admin.ModelAdmin):
+  list_display = ('case', 'description', 'date', 'text', )
+
+admin.site.register(Examination, ExaminationAdmin)
+
+class ExaminationAttachmentAdmin(admin.ModelAdmin):
+  list_display = ('examination', 'insertion_date', 'file', )
+
+admin.site.register(ExaminationAttachment, ExaminationAttachmentAdmin)

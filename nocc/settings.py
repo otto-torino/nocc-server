@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'private_media',
     'noccapp',
 )
 
@@ -115,7 +116,6 @@ LANGUAGE_CODE = 'it-it'
 TIME_ZONE = 'Europe/Rome'
 
 USE_I18N = True
-
 USE_L10N = True
 
 USE_TZ = True
@@ -134,11 +134,29 @@ STATICFILES_DIRS = (
 )
 
 # Media
+
+PRIVATE_MEDIA_URL = '/private/'
+PRIVATE_MEDIA_CASES = 'cases'
+PRIVATE_MEDIA_PERMISSIONS = 'noccapp.permissions.MediaPermissions'
+
+if DEBUG:
+    # dev
+    PRIVATE_MEDIA_ROOT = os.path.join(BASE_DIR, 'private')
+    PRIVATE_MEDIA_SERVER = 'private_media.servers.DefaultServer'
+else:
+    # prod
+    PRIVATE_MEDIA_ROOT = '/home/user/my/path/to/private/media'
+    PRIVATE_MEDIA_SERVER = 'private_media.servers.ApacheXSendfileServer'
+    #PRIVATE_MEDIA_SERVER_OPTIONS = {'arg1': 1, ...}  # (optional) kwargs to init server
+
 MEDIA_ROOT = BASE_DIR + '/media'
 MEDIA_URL = '/media/'
+
 MEDIA_DOCTOR = 'doctors'
 MEDIA_DOCTOR_CV = MEDIA_DOCTOR + '/cv'
 MEDIA_DOCTOR_PHOTO = MEDIA_DOCTOR + '/photo'
+
+MEDIA_CASES = 'cases'
 
 #APP
 APP_ROOT = '/home/abidibo/Web/www/nocc/frontend/nocc/build'

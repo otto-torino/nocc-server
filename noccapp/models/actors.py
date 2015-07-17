@@ -173,5 +173,8 @@ class Patient(models.Model):
         """
         Check that user is not already a doctor
         """
-        if self.user.doctor:
-            raise ValidationError('User can\'t be a doctor')
+        try:
+            if self.user.doctor:
+                raise ValidationError('User can\'t be a doctor')
+        except Doctor.DoesNotExist:
+            pass

@@ -53,7 +53,9 @@ class PatientViewsetTest(TestCase):
 
     def setUp(self):
         self.u1 = User.objects.create(username='surgeon')
+        self.u2 = User.objects.create(username='oncologist')
         doctor_surgeon = Doctor.objects.create(user=self.u1, firstname='Gino', lastname='Pino', is_surgeon=True)
+        doctor_oncologist = Doctor.objects.create(user=self.u2, firstname='Cippo', lastname='Lippo', is_surgeon=False, is_oncologist=True)
 
     def test_patient_create(self):
         """
@@ -73,6 +75,15 @@ class PatientViewsetTest(TestCase):
             'phone': '8988',
             'email': 'luca@yahoo.com'
         }
-        response = client.post('/nocc/api/v1/patient/', new_patient, format='json')
+        response = client.post('/nocc/api/v1/patients/', new_patient, format='json')
         self.assertEqual(response.status_code, 201)
 
+    def test_patients_viewset_denied_to_non_surgeon(self):
+        """
+        If a user attempts to add a contact to its user receives 200
+        """
+        client = APIClient()
+        token = Token.objects.get(user__username='oncologist')
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = client.post('/nocc/api/v1/patients/', content_type='application/json')
+        self.assertEqual(response.status_code, 403)
