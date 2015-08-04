@@ -72,7 +72,7 @@ class ProfileTest(TestCase):
         client = APIClient()
         token = Token.objects.get(user__username='gino')
         client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-        response = client.put('/nocc/api/v1/doctors/gino/', '{"firstname": "Ginetto", "lastname": "Pinetto"}', content_type='application/json')
+        response = client.put('/nocc/api/v1/doctors/gino/', '{"firstname": "Ginetto", "lastname": "Pinetto", "email": "gino@pinetto.it"}', content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data.get('firstname'), 'Ginetto')
 

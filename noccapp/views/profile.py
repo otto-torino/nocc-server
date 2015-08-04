@@ -37,6 +37,7 @@ class DoctorcRUdView(mixins.RetrieveModelMixin,
         """
         queryset = Doctor.objects.all()
         type = self.request.query_params.get('type', None)
+        exclude = self.request.query_params.get('exclude', None)
 
         if type == 'oncologist':
             queryset = queryset.filter(is_oncologist=True)
@@ -44,6 +45,10 @@ class DoctorcRUdView(mixins.RetrieveModelMixin,
             queryset = queryset.filter(is_radiotherapist=True)
         elif type == 'surgeon':
             queryset = queryset.filter(is_surgeon=True)
+
+        if(exclude):
+            ids = exclude.split('-')
+            queryset = queryset.exclude(id__in=ids)
 
         return queryset
 
@@ -114,6 +119,9 @@ class DoctorContactAvailabilityExceptionCRuDView(mixins.CreateModelMixin,
             return (permissions.IsAuthenticated(), IsExceptionContactOwner(),)
 
         return (permissions.IsAuthenticated(), IsExceptionOwner(),)
+
+    def get_queryset(self):
+        return DoctorContactAvailabilityException.objects.filter(doctor_contact=self.kwargs['contact_id'])
 
 class HospitalViewSet(viewsets.ModelViewSet):
     """

@@ -45,6 +45,7 @@ INSTALLED_APPS = (
     'corsheaders',
     'private_media',
     'noccapp',
+    'django_cleanup',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -137,6 +138,7 @@ STATICFILES_DIRS = (
 
 PRIVATE_MEDIA_URL = '/private/'
 PRIVATE_MEDIA_CASES = 'cases'
+PRIVATE_MEDIA_DOCTORS = 'doctors'
 PRIVATE_MEDIA_PERMISSIONS = 'noccapp.permissions.MediaPermissions'
 
 if DEBUG:
@@ -157,6 +159,7 @@ MEDIA_DOCTOR_CV = MEDIA_DOCTOR + '/cv'
 MEDIA_DOCTOR_PHOTO = MEDIA_DOCTOR + '/photo'
 
 MEDIA_CASES = 'cases'
+MEDIA_GUIDELINES = 'guidelines'
 
 #APP
 APP_ROOT = '/home/abidibo/Web/www/nocc/frontend/nocc/build'

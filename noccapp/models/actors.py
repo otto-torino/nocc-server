@@ -8,6 +8,8 @@ from django.dispatch import receiver
 
 from rest_framework.authtoken.models import Token
 
+from private_media.storages import PrivateMediaStorage
+
 from noccapp.managers.actors import DoctorManager
 
 @receiver(post_save, sender=User)
@@ -39,13 +41,15 @@ def set_cv_folder(instance, filename):
     """
     Path to the upload folder for doctors' cv
     """
-    return '/'.join([settings.MEDIA_DOCTOR_CV, filename])
+    #return '/'.join([settings.MEDIA_DOCTOR_CV, filename])
+    return '/'.join([settings.PRIVATE_MEDIA_DOCTORS, str(instance.id), 'cv', filename])
 
 def set_photo_folder(instance, filename):
     """
     Path to the upload folder for doctors' photos
     """
-    return '/'.join([settings.MEDIA_DOCTOR_PHOTO, filename])
+    #return '/'.join([settings.MEDIA_DOCTOR_PHOTO, filename])
+    return '/'.join([settings.PRIVATE_MEDIA_DOCTORS, str(instance.id), 'photo', filename])
 
 def validate_doctor_user(user):
     """
@@ -62,11 +66,12 @@ class Doctor(models.Model):
     user = models.OneToOneField(User, verbose_name='utente', related_name='doctor')
     firstname = models.CharField('nome', max_length=128)
     lastname = models.CharField('cognome', max_length=128)
+    email = models.EmailField('email', max_length=255)
     is_surgeon = models.BooleanField('chirurgo', default=False)
     is_oncologist = models.BooleanField('oncologo', default=False)
     is_radiotherapist = models.BooleanField('radioterapista', default=False)
-    cv = models.FileField('cv', upload_to=set_cv_folder, blank=True, null=True)
-    photo = models.ImageField('photo', upload_to=set_photo_folder, blank=True, null=True)
+    cv = models.FileField('cv', upload_to=set_cv_folder, storage=PrivateMediaStorage(), blank=True, null=True)
+    photo = models.ImageField('photo', upload_to=set_photo_folder, storage=PrivateMediaStorage(), blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add = True)
     updated_at = models.DateTimeField(auto_now = True)
 
@@ -118,7 +123,7 @@ class DoctorContact(models.Model):
         return 'contatto %s ospedale %s' % (str(self.doctor), str(self.hospital))
 
 class DoctorContactAvailabilityException(models.Model):
-    doctor_contact = models.ForeignKey(DoctorContact, verbose_name='contatto')
+    doctor_contact = models.ForeignKey(DoctorContact, verbose_name='contatto', related_name="exceptions")
     date = models.DateField('data', auto_now=False, auto_now_add=False)
 
     class Meta:

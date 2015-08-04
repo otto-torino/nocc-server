@@ -1,0 +1,12 @@
+# HTTP Cookie File for domains related to altadefinizione.li.
+# Downloaded with cookies.txt Chrome Extension (https://chrome.google.com/webstore/detail/njabckikapfpffapmjgojcnbfjonfjfg)
+# Example:  wget -x --load-cookies cookies.txt http://altadefinizione.li/american-sniper-hd/
+#
+.altadefinizione.li	TRUE	/	FALSE	1461933989.938381	__cfduid	dbf5b2127527e7702a23d1456533335731430397989
+.altadefinizione.li	TRUE	/	FALSE	1430398590	__utmt	1
+.altadefinizione.li	TRUE	/	FALSE	1493470079	__utma	132718558.815566794.1430397990.1430397990.1430397990.1
+.altadefinizione.li	TRUE	/	FALSE	1430399879	__utmb	132718558.3.10.1430397990
+.altadefinizione.li	TRUE	/	FALSE	0	__utmc	132718558
+.altadefinizione.li	TRUE	/	FALSE	1446166079	__utmz	132718558.1430397990.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none)
+altadefinizione.li	FALSE	/	FALSE	1493556480	__atuvc	2%7C17
+altadefinizione.li	FALSE	/	FALSE	1430399880	__atuvs	554224361f4717db001

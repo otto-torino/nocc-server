@@ -12,7 +12,11 @@ router.register(r'doctors', views.profile.DoctorcRUdView)
 router.register(r'hospitals', views.profile.HospitalViewSet)
 router.register(r'patients', views.profile.PatientViewSet)
 router.register(r'cases/(?P<case_id>\d+)/examinations', views.case.ExaminationViewSet)
+router.register(r'cases/(?P<case_id>\d+)/therapeutic-proposals', views.case.TherapeuticProposalViewset)
+router.register(r'cases/(?P<case_id>\d+)/therapeutic-proposals/(?P<tp_id>\d+)/polling', views.case.PollingView)
+router.register(r'cases/(?P<case_id>\d+)/followup', views.case.FollowUpViewSet)
 router.register(r'cases', views.case.CaseViewSet)
+router.register(r'guidelines', views.case.GuidelineViewSet)
 
 urlpatterns = [
     url(r'api/v1/auth/login/$', views.authentication.LoginView.as_view(), name='noccapp-auth-login'),
